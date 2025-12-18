@@ -33,6 +33,14 @@ pipeline {
             }
         }
 
+        stage('MVN SONARQUBE') {
+            steps {
+                withSonarQubeEnv('Sonarqube') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
         
 
     }
