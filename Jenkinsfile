@@ -49,7 +49,7 @@ pipeline {
         }
 
         
- stage('Docker Cleanup & Build') {
+        stage('Docker Cleanup & Build') {
             steps {
                 sh '''
                 # Supprimer containers existants si ils existent
