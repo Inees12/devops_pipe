@@ -32,6 +32,13 @@ pipeline {
                 sh 'mvn package -DskipTests'
             }
         }
+        stage('Test Sonar Env') {
+            steps {
+                withSonarQubeEnv('Sonarqube') {
+                    sh 'echo "SONAR_HOST_URL=$SONAR_HOST_URL"'
+                }
+            }
+        }
 
         stage('MVN SONARQUBE') {
             steps {
