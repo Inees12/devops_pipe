@@ -10,8 +10,8 @@ pipeline {
         stage('GIT') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/eyakhadhraoui/test.git',
-                    credentialsId: 'pat_jenkins' // Ton ID GitHub PAT
+                    url: 'https://github.com/Inees12/devops_pipe.git',
+                    credentialsId: 'jenkins-token' // Ton ID GitHub PAT
             }
         }
 
