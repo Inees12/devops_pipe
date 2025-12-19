@@ -11,7 +11,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/Inees12/devops_pipe.git',
-                    credentialsId: 'jenkins-token' // Ton ID GitHub PAT
+                    credentialsId: 'jenkins-token'
             }
         }
 
@@ -32,6 +32,7 @@ pipeline {
                 sh 'mvn package -DskipTests'
             }
         }
+
         stage('Test Sonar Env') {
             steps {
                 withSonarQubeEnv('Sonarqube') {
@@ -48,17 +49,11 @@ pipeline {
             }
         }
 
-        
         stage('Docker Cleanup & Build') {
             steps {
                 sh '''
-                # Supprimer containers existants si ils existent
                 docker rm -f student-app student-mysql || true
-                
-                # Supprimer l'ancienne image si elle existe
                 docker rmi -f student-management-app:1.0 || true
-
-                # Build de la nouvelle image Spring Boot
                 docker build -t student-management-app:1.0 .
                 '''
             }
@@ -67,15 +62,44 @@ pipeline {
         stage('Docker Compose Up') {
             steps {
                 sh '''
-                # Supprimer containers et réseaux orphelins
                 docker-compose down --remove-orphans
-
-                # Lancer les services avec build
                 docker-compose up -d --build
                 '''
             }
         }
 
+        stage('GIT KUBERNETES MANIFESTS') {
+            steps {
+                dir('k8s-repo') {
+                    git branch: 'master',
+                        url: 'https://github.com/NadineMili/student-management-devops.git'
+                }
+            }
+        }
+
+        stage('KUBERNETES DEPLOY') {
+            steps {
+                sh '''
+                echo "===== Kubernetes Deployment ====="
+                kubectl get nodes
+                kubectl apply -f k8s-repo/student-man-main/k8s/
+                kubectl get pods -n devops
+                kubectl get svc -n devops
+                '''
+            }
+        }
+
+        stage('CREATE DEPARTMENT') {
+            steps {
+                sh '''
+                echo "===== Creating Department via REST API ====="
+                sleep 20
+                curl -X POST http://192.168.49.2:32639/department/createDepartment \
+                     -H "Content-Type: application/json" \
+                     -d '{"name": "Finance", "location": "Sfax"}'
+                '''
+            }
+        }
     }
 
     post {
